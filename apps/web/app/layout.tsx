@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
-import { Bebas_Neue, IBM_Plex_Mono } from 'next/font/google';
+import { Bebas_Neue, IBM_Plex_Mono, Geist } from 'next/font/google';
 import './globals.css';
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const bebasNeue = Bebas_Neue({
   weight: '400',
@@ -27,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${bebasNeue.variable} ${ibmPlexMono.variable} h-full`}>
+    <html lang="en" className={cn("h-full", bebasNeue.variable, ibmPlexMono.variable, "font-sans", geist.variable)}>
       <body className="h-full">{children}</body>
     </html>
   );
