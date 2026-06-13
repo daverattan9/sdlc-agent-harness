@@ -7,12 +7,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
-
-import { ROLES_CLAIM, type Role } from '@/lib/auth/config';
+import { getRolesFromClaim, type Role } from '@/lib/auth/config';
 
 type RouteHandler = (
   req: NextRequest,
-  ctx: { params: Promise<Record<string, string>> },
+  ctx: { params: Promise<Record<string, string | string[]>> },
 ) => Promise<NextResponse | Response>;
 
 /**
@@ -20,19 +19,24 @@ type RouteHandler = (
  * and to have the given role in their JWT's custom roles claim.
  *
  * Returns:
- *   401  — no active session
+ *   401  — no active session (or malformed session cookie)
  *   403  — session exists but role does not match
  *   otherwise — delegates to the wrapped handler
  */
 export function requireRole(role: Role, handler: RouteHandler): RouteHandler {
   return async (req, ctx) => {
-    const session = await auth0.getSession();
+    let session;
+    try {
+      session = await auth0.getSession();
+    } catch {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userRoles: string[] = (session.user[ROLES_CLAIM] as string[]) ?? [];
+    const userRoles = getRolesFromClaim(session.user as Record<string, unknown>);
 
     if (!userRoles.includes(role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

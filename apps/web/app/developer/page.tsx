@@ -1,5 +1,5 @@
 // app/developer/page.tsx
-// Protected: requires 'developer' role (enforced by middleware.ts).
+// Protected: requires 'developer' role (enforced by proxy.ts).
 // Stub for now — will be filled in Phase 2D.
 
 export default function DeveloperPage() {

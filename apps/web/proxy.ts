@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
-import { ROLES_CLAIM, ROLES } from '@/lib/auth/config';
+import { getRolesFromClaim, ROLES } from '@/lib/auth/config';
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -13,16 +13,18 @@ export async function proxy(request: NextRequest) {
   // Let Auth0 handle its own /auth/* routes first.
   const authResponse = await auth0.middleware(request);
 
-  // If Auth0 is handling this request (e.g. /auth/callback), return its response.
-  if (authResponse.status !== 200 || pathname.startsWith('/auth')) {
+  // Auth0 is handling this request (callback, login, logout, profile).
+  if (pathname.startsWith('/auth')) {
     return authResponse;
   }
 
   // --- Route protection ---
 
+  // Fetch session once for all protected routes.
+  const session = await auth0.getSession().catch(() => null);
+
   // /dashboard requires any authenticated user.
   if (pathname.startsWith('/dashboard')) {
-    const session = await auth0.getSession();
     if (!session) {
       const loginUrl = new URL('/auth/login', request.url);
       loginUrl.searchParams.set('returnTo', pathname);
@@ -33,13 +35,12 @@ export async function proxy(request: NextRequest) {
 
   // /developer requires the 'developer' role.
   if (pathname.startsWith('/developer')) {
-    const session = await auth0.getSession();
     if (!session) {
       const loginUrl = new URL('/auth/login', request.url);
       loginUrl.searchParams.set('returnTo', pathname);
       return NextResponse.redirect(loginUrl);
     }
-    const userRoles: string[] = (session.user[ROLES_CLAIM] as string[]) ?? [];
+    const userRoles = getRolesFromClaim(session.user as Record<string, unknown>);
     if (!userRoles.includes(ROLES.DEVELOPER)) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
@@ -51,7 +52,7 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Run on all routes except Next.js internals and static files.
-    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
+    // Run on all routes except Next.js internals and common static assets.
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\..*).*)',
   ],
 };
