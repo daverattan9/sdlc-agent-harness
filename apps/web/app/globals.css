@@ -1,0 +1,173 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-display: var(--font-bebas);
+  --font-mono: var(--font-ibm-mono);
+
+  --color-mission-bg: #060a12;
+  --color-mission-surface: #0b1422;
+  --color-mission-card: #0e1929;
+  --color-mission-border: #1a2d50;
+  --color-mission-border-dim: #111e36;
+  --color-mission-text: #d9e4f0;
+  --color-mission-secondary: #4a6484;
+  --color-mission-muted: #263347;
+  --color-mission-green: #00c96e;
+  --color-mission-green-dim: #005c31;
+  --color-mission-red: #ff3535;
+  --color-mission-red-dim: #4d0a0a;
+  --color-mission-amber: #f59e0b;
+  --color-mission-blue: #3b82f6;
+}
+
+/* ─── Base ─── */
+html {
+  background-color: #060a12;
+  color: #d9e4f0;
+}
+
+body {
+  font-family: var(--font-ibm-mono), "Courier New", monospace;
+  background-color: #060a12;
+  min-height: 100vh;
+}
+
+/* ─── Grid texture overlay ─── */
+.grid-texture {
+  background-image:
+    linear-gradient(rgba(26, 45, 80, 0.25) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26, 45, 80, 0.25) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ─── Scanline overlay ─── */
+.scanlines::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.06) 2px,
+    rgba(0, 0, 0, 0.06) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ─── Glow effects ─── */
+.glow-green {
+  box-shadow:
+    0 0 20px rgba(0, 201, 110, 0.15),
+    0 0 60px rgba(0, 201, 110, 0.05);
+}
+
+.glow-red {
+  box-shadow:
+    0 0 30px rgba(255, 53, 53, 0.3),
+    0 0 80px rgba(255, 53, 53, 0.12),
+    inset 0 0 30px rgba(255, 53, 53, 0.06);
+}
+
+.text-glow-green {
+  text-shadow: 0 0 30px rgba(0, 201, 110, 0.6);
+}
+
+.text-glow-red {
+  text-shadow: 0 0 30px rgba(255, 53, 53, 0.8), 0 0 60px rgba(255, 53, 53, 0.4);
+}
+
+/* ─── Animations ─── */
+@keyframes pulse-border-red {
+  0%,
+  100% {
+    border-color: rgba(255, 53, 53, 0.5);
+    box-shadow:
+      0 0 30px rgba(255, 53, 53, 0.25),
+      0 0 80px rgba(255, 53, 53, 0.1),
+      inset 0 0 30px rgba(255, 53, 53, 0.04);
+  }
+  50% {
+    border-color: rgba(255, 53, 53, 0.9);
+    box-shadow:
+      0 0 50px rgba(255, 53, 53, 0.5),
+      0 0 120px rgba(255, 53, 53, 0.2),
+      inset 0 0 50px rgba(255, 53, 53, 0.08);
+  }
+}
+
+@keyframes badge-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0.2;
+  }
+}
+
+@keyframes slide-up-fade {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes header-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes status-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+}
+
+.animate-card-1 {
+  animation: slide-up-fade 0.5s ease-out 0.1s both;
+}
+.animate-card-2 {
+  animation: slide-up-fade 0.5s ease-out 0.2s both;
+}
+.animate-card-3 {
+  animation: slide-up-fade 0.5s ease-out 0.3s both;
+}
+.animate-card-4 {
+  animation: slide-up-fade 0.5s ease-out 0.4s both;
+}
+.animate-header {
+  animation: header-reveal 0.4s ease-out both;
+}
+
+.pulse-red {
+  animation: pulse-border-red 2s ease-in-out infinite;
+}
+
+.badge-blink {
+  animation: badge-blink 1.2s step-end infinite;
+}
+
+.status-dot {
+  animation: status-dot 2s ease-in-out infinite;
+}
