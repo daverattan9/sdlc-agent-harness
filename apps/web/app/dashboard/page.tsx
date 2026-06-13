@@ -19,7 +19,6 @@ export default function DashboardPage() {
       <Script
         src="https://elevenlabs.io/convai-widget/index.js"
         strategy="lazyOnload"
-        async
       />
 
       <main

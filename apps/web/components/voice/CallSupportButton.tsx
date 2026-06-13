@@ -42,6 +42,8 @@ export default function CallSupportButton({ agentId }: CallSupportButtonProps) {
 
       <button
         onClick={handleCall}
+        aria-pressed={isActive}
+        aria-label={isActive ? 'End support call' : 'Start support call'}
         className="group relative flex items-center gap-3 overflow-hidden rounded-full px-6 py-3 text-sm font-semibold transition-all duration-200 active:scale-95"
         style={{
           backgroundColor: isActive ? 'rgba(245, 158, 11, 0.2)' : 'rgba(245, 158, 11, 0.1)',

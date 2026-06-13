@@ -11,6 +11,7 @@ interface MetricCardProps {
 function useCountUp(target: string, isBuggy: boolean, duration = 1200) {
   const [displayed, setDisplayed] = useState('—');
   const frameRef = useRef<number | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (isBuggy) {
@@ -20,7 +21,7 @@ function useCountUp(target: string, isBuggy: boolean, duration = 1200) {
       const FAKE_TARGET = 14.4;
 
       const step = (ts: number) => {
-        if (!start) start = ts;
+        if (start === null) start = ts;
         const progress = Math.min((ts - start) / (duration * 0.7), 1);
         const eased = 1 - Math.pow(1 - progress, 3);
         setDisplayed(`${(FAKE_TARGET * eased).toFixed(2)}%`);
@@ -29,13 +30,14 @@ function useCountUp(target: string, isBuggy: boolean, duration = 1200) {
           frameRef.current = requestAnimationFrame(step);
         } else {
           // Snap to the buggy 0.00%
-          setTimeout(() => setDisplayed(target), 80);
+          timeoutRef.current = setTimeout(() => setDisplayed(target), 80);
         }
       };
 
       frameRef.current = requestAnimationFrame(step);
       return () => {
         if (frameRef.current) cancelAnimationFrame(frameRef.current);
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
       };
     }
 
@@ -58,7 +60,7 @@ function useCountUp(target: string, isBuggy: boolean, duration = 1200) {
     let start: number | null = null;
 
     const step = (ts: number) => {
-      if (!start) start = ts;
+      if (start === null) start = ts;
       const progress = Math.min((ts - start) / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
       const current = endValue * eased;
