@@ -2,6 +2,7 @@ import Script from 'next/script';
 import MetricCard from '@/components/dashboard/MetricCard';
 import CallSupportButton from '@/components/voice/CallSupportButton';
 import { getDashboardMetrics } from '@/lib/metrics';
+import { auth0 } from '@/lib/auth0';
 
 const ANIMATION_CLASSES = [
   'animate-card-1',
@@ -10,8 +11,9 @@ const ANIMATION_CLASSES = [
   'animate-card-4',
 ];
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
   const metrics = getDashboardMetrics();
+  const session = await auth0.getSession().catch(() => null);
 
   return (
     <>
@@ -74,7 +76,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Right side: status + date */}
+          {/* Right side: status + user + date */}
           <div className="flex items-center gap-6">
             {/* System status */}
             <div className="flex items-center gap-2">
@@ -94,6 +96,32 @@ export default function DashboardPage() {
               className="h-4 w-px"
               style={{ backgroundColor: '#1a2d50' }}
             />
+
+            {/* Authenticated user info */}
+            {session?.user && (
+              <>
+                <div className="text-right">
+                  <div
+                    className="text-xs tracking-widest"
+                    style={{ color: '#d9e4f0', fontFamily: 'var(--font-ibm-mono)' }}
+                  >
+                    {session.user.name ?? session.user.email}
+                  </div>
+                  {session.user.name && session.user.email && (
+                    <div
+                      className="text-xs tracking-widest"
+                      style={{ color: '#4a6484', fontFamily: 'var(--font-ibm-mono)' }}
+                    >
+                      {session.user.email}
+                    </div>
+                  )}
+                </div>
+                <div
+                  className="h-4 w-px"
+                  style={{ backgroundColor: '#1a2d50' }}
+                />
+              </>
+            )}
 
             {/* Separator */}
             <div className="text-right">
