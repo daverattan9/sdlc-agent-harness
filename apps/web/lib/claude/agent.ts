@@ -251,7 +251,7 @@ export async function runResearchAgent(input: AgentInput): Promise<AgentResult> 
     `The repository is: ${repo} (format: owner/repo)\n` +
     `Focus on TypeScript/JavaScript files in apps/web/lib/`;
 
-  const { text } = await generateText({
+  const { steps } = await generateText({
     model: anthropic('claude-sonnet-4-6'),
     system: systemPrompt,
     prompt:
@@ -267,21 +267,31 @@ export async function runResearchAgent(input: AgentInput): Promise<AgentResult> 
     stopWhen: stepCountIs(10),
   });
 
-  // Parse the agent's final text response for structured result fields.
-  // The agent is instructed to call update_notion_ticket before finishing,
-  // so we do a best-effort parse of the final text as well.
-  const fileMatch = text.match(/File:\s*([^\n]+)/i);
-  const lineMatch = text.match(/Line:\s*(\d+)/i);
-  const causeMatch = text.match(/Root Cause:\s*([^\n]+)/i);
-  const fixMatch = text.match(/Suggested Fix:\s*([^\n]+)/i);
+  // Extract the result from the update_notion_ticket tool call args.
+  // This is more reliable than parsing free text.
+  type UpdateArgs = { pageId: string; file: string; line: number; rootCause: string; suggestedFix: string };
+  let updateArgs: UpdateArgs | undefined;
+  for (const step of steps) {
+    for (const call of step.toolCalls ?? []) {
+      if (call.toolName === 'update_notion_ticket') {
+        updateArgs = ('input' in call ? call.input : undefined) as UpdateArgs | undefined;
+        break;
+      }
+    }
+    if (updateArgs) break;
+  }
+
+  if (!updateArgs) {
+    throw new Error(
+      'Research agent did not call update_notion_ticket — agent may have failed to find the bug'
+    );
+  }
 
   return {
-    file: fileMatch?.[1]?.trim() ?? 'apps/web/lib/metrics.ts',
-    line: lineMatch ? parseInt(lineMatch[1], 10) : 27,
-    description: causeMatch?.[1]?.trim() ?? text.slice(0, 200),
-    fix:
-      fixMatch?.[1]?.trim() ??
-      'return (conversions / sessions) * 100;',
+    file: updateArgs.file,
+    line: updateArgs.line,
+    description: updateArgs.rootCause,
+    fix: updateArgs.suggestedFix,
     notionPageId: input.notionPageId,
   };
 }
