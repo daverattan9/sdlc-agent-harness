@@ -11,6 +11,7 @@ export const auth0 = new Auth0Client({
   session: {
     cookie: {
       sameSite: 'lax', // 'strict' breaks OAuth callbacks (cross-site redirect from auth0.com)
+      // httpOnly and secure are enforced by the SDK automatically
     },
   },
 });

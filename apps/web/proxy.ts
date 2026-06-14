@@ -20,7 +20,10 @@ export async function proxy(request: NextRequest) {
     const session = await auth0.getSession().catch(() => null);
     if (!session) {
       const loginUrl = new URL('/auth/login', request.url);
-      loginUrl.searchParams.set('returnTo', pathname);
+      // Only allow same-origin relative paths as returnTo — prevents open redirect.
+      if (pathname.startsWith('/') && !pathname.startsWith('//')) {
+        loginUrl.searchParams.set('returnTo', pathname);
+      }
       return NextResponse.redirect(loginUrl);
     }
   }

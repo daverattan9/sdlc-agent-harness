@@ -3,6 +3,7 @@
 // Codex worker. Protected by CODEX_WORKER_SECRET header.
 
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 
 interface CodexDispatchPayload {
   ticketId: string;
@@ -20,14 +21,19 @@ export async function POST(req: NextRequest) {
   const workerUrl = process.env.CODEX_WORKER_URL;
   const workerSecret = process.env.CODEX_WORKER_SECRET;
 
-  // Verify caller is the internal Claude agent using the shared secret.
-  const callerSecret = req.headers.get('x-codex-worker-secret');
-  if (!workerSecret || callerSecret !== workerSecret) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   if (!workerUrl || !workerSecret) {
     return NextResponse.json({ error: 'Codex worker not configured' }, { status: 503 });
+  }
+
+  // Verify caller is the internal Claude agent using timing-safe comparison.
+  const callerSecret = req.headers.get('x-codex-worker-secret') ?? '';
+  let authorized = false;
+  try {
+    authorized = callerSecret.length === workerSecret.length &&
+      crypto.timingSafeEqual(Buffer.from(callerSecret), Buffer.from(workerSecret));
+  } catch { authorized = false; }
+  if (!authorized) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   let body: CodexDispatchPayload;
