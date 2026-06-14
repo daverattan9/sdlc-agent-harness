@@ -7,7 +7,7 @@
 //   - generateText uses `stopWhen: stepCountIs(N)` instead of `maxSteps: N`
 
 import { generateText, tool, stepCountIs } from 'ai';
-import { anthropic } from '@ai-sdk/anthropic';
+import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
 import { getNotion } from '@/lib/notion/client';
 import { updateTicket } from '@/lib/notion/tickets';
@@ -252,7 +252,7 @@ export async function runResearchAgent(input: AgentInput): Promise<AgentResult> 
     `Focus on TypeScript/JavaScript files in apps/web/lib/`;
 
   const { steps } = await generateText({
-    model: anthropic('claude-sonnet-4-6'),
+    model: openai('gpt-4o-mini'),
     system: systemPrompt,
     prompt:
       `Investigate this bug ticket (Notion page ID: ${input.notionPageId}):\n\n` +

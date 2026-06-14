@@ -9,7 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.84",
+    "@ai-sdk/openai": "^3.0.71",
     "@auth0/nextjs-auth0": "^4.22.0",
     "@base-ui/react": "^1.5.0",
     "@notionhq/client": "^5.22.0",
@@ -27,12 +27,12 @@
     "zod": "^4.4.3"
   },
   "optionalDependencies": {
-    "lightningcss-linux-x64-gnu": "*",
     "lightningcss-darwin-arm64": "*",
     "lightningcss-darwin-x64": "*",
     "@tailwindcss/oxide-linux-x64-gnu": "*",
     "@tailwindcss/oxide-darwin-arm64": "*",
-    "@tailwindcss/oxide-darwin-x64": "*"
+    "@tailwindcss/oxide-darwin-x64": "*",
+    "lightningcss-linux-x64-gnu": "*"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

@@ -38,7 +38,7 @@ jobs:
           NOTION_DATABASE_ID: placeholder
           NOTION_WEBHOOK_SECRET: placeholder
           ELEVENLABS_WEBHOOK_SECRET: placeholder
-          ANTHROPIC_API_KEY: placeholder
+          OPENAI_API_KEY: placeholder
           GITHUB_REPO: placeholder/placeholder
           GITHUB_WEBHOOK_SECRET: placeholder
           CODEX_WORKER_URL: http://localhost:3001
