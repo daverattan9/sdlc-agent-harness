@@ -1,5 +1,5 @@
 import MetricCard from '@/components/dashboard/MetricCard';
-import VoiceOrb from '@/components/voice/CallSupportButton';
+import VoiceOrb from '@/components/voice/VoiceOrbLoader';
 import { getDashboardMetrics } from '@/lib/metrics';
 import { auth0 } from '@/lib/auth0';
 
