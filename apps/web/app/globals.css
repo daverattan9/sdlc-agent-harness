@@ -36,6 +36,23 @@ body {
   min-height: 100vh;
 }
 
+/* ─── Logout link ─── */
+.logout-link {
+  font-family: var(--font-ibm-mono), monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  color: #4a6484;
+  text-decoration: none;
+  border: 1px solid #1a2d50;
+  border-radius: 4px;
+  padding: 0.25rem 0.6rem;
+  transition: color 0.15s, border-color 0.15s;
+}
+.logout-link:hover {
+  color: #ff3535;
+  border-color: rgba(255, 53, 53, 0.4);
+}
+
 /* ─── Grid texture overlay ─── */
 .grid-texture {
   background-image:

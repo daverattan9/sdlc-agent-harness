@@ -116,6 +116,12 @@ export default async function DashboardPage() {
                     </div>
                   )}
                 </div>
+                <a
+                  href="/auth/logout"
+                  className="logout-link"
+                >
+                  LOGOUT
+                </a>
                 <div
                   className="h-4 w-px"
                   style={{ backgroundColor: '#1a2d50' }}

@@ -1,17 +1,12 @@
 // app/api/claude/route.ts
-// Developer-only endpoint that receives a Notion webhook and runs the
-// Claude research agent to investigate a bug ticket.
-//
-// Security:
-//   - requireRole('developer') enforces Auth0 session + role check
-//   - validateHmac verifies the Notion webhook HMAC-SHA256 signature
+// Internal webhook endpoint called by Notion automations to trigger the
+// Claude research agent. Protected by HMAC-SHA256 signature.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireRole } from '@/lib/auth/require-role';
 import { validateHmac } from '@/lib/webhooks/hmac';
 import { runResearchAgent } from '@/lib/claude/agent';
 
-async function handler(req: NextRequest) {
+export async function POST(req: NextRequest) {
   // Read raw body before any parsing so HMAC can be validated over the
   // exact bytes that were signed.
   const rawBody = await req.text();
@@ -49,4 +44,3 @@ async function handler(req: NextRequest) {
   }
 }
 
-export const POST = requireRole('developer', handler);

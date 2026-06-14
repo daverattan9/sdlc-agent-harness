@@ -1,5 +1,8 @@
+// app/api/codex/route.ts
+// Internal endpoint called by the Claude agent to dispatch a fix job to the
+// Codex worker. Protected by CODEX_WORKER_SECRET header.
+
 import { NextRequest, NextResponse } from 'next/server';
-import { requireRole } from '@/lib/auth/require-role';
 
 interface CodexDispatchPayload {
   ticketId: string;
@@ -13,12 +16,15 @@ interface CodexDispatchPayload {
   };
 }
 
-async function handler(
-  req: NextRequest,
-  _ctx: { params: Promise<Record<string, string | string[]>> },
-) {
+export async function POST(req: NextRequest) {
   const workerUrl = process.env.CODEX_WORKER_URL;
   const workerSecret = process.env.CODEX_WORKER_SECRET;
+
+  // Verify caller is the internal Claude agent using the shared secret.
+  const callerSecret = req.headers.get('x-codex-worker-secret');
+  if (!workerSecret || callerSecret !== workerSecret) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   if (!workerUrl || !workerSecret) {
     return NextResponse.json({ error: 'Codex worker not configured' }, { status: 503 });
@@ -65,4 +71,3 @@ async function handler(
   }
 }
 
-export const POST = requireRole('developer', handler);

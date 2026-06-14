@@ -5,9 +5,12 @@
 import { Auth0Client } from '@auth0/nextjs-auth0/server';
 
 export const auth0 = new Auth0Client({
+  authorizationParameters: {
+    scope: 'openid profile email', // no offline_access — avoids consent screen
+  },
   session: {
     cookie: {
-      sameSite: 'strict',
+      sameSite: 'lax', // 'strict' breaks OAuth callbacks (cross-site redirect from auth0.com)
     },
   },
 });
