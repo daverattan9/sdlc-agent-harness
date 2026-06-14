@@ -26,6 +26,11 @@
     "uuid": "^14.0.0",
     "zod": "^4.4.3"
   },
+  "optionalDependencies": {
+    "lightningcss-linux-x64-gnu": "*",
+    "lightningcss-darwin-arm64": "*",
+    "lightningcss-darwin-x64": "*"
+  },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20.19.43",
