@@ -17,10 +17,17 @@ app.use(express.json({ limit: '1mb' }));
 // In-memory job store (sufficient for demo)
 const jobs = new Map<string, JobRecord>();
 
-/** Validate the shared secret sent by the Next.js app. */
+/** Validate the shared secret using timing-safe comparison. */
 function validateSecret(req: express.Request): boolean {
-  const secret = req.headers['x-codex-worker-secret'];
-  return secret === process.env.CODEX_WORKER_SECRET;
+  const provided = req.headers['x-codex-worker-secret'];
+  const expected = process.env.CODEX_WORKER_SECRET;
+  if (!provided || !expected || typeof provided !== 'string') return false;
+  if (provided.length !== expected.length) return false;
+  try {
+    return crypto.timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
+  } catch {
+    return false;
+  }
 }
 
 app.get('/health', (_req, res) => {

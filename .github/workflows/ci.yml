@@ -9,6 +9,8 @@ on:
 jobs:
   build-and-test:
     name: Build & Test
+    # Use ubuntu-latest to match Render's Linux build environment exactly —
+    # catches platform-specific native module issues before they reach Render.
     runs-on: ubuntu-latest
 
     steps:
@@ -23,8 +25,11 @@ jobs:
 
       - name: Install dependencies
         # npm install (not ci) resolves platform-specific optional binaries
-        # (e.g. lightningcss-linux-x64-gnu) on the current runner OS.
+        # (e.g. lightningcss-linux-x64-gnu, @tailwindcss/oxide-linux-x64-gnu).
         run: npm install --no-audit
+
+      - name: Type-check
+        run: npx tsc --noEmit --project apps/web/tsconfig.json
 
       - name: Build Next.js app
         run: npm run build --workspace=apps/web
@@ -49,3 +54,43 @@ jobs:
 
       - name: Run tests
         run: npm test --workspace=apps/web --if-present
+
+  deploy-preview:
+    name: Verify Render deploy (on main push)
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Trigger & wait for Render deploy
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          WEB_SERVICE_ID: srv-d8n52ejbc2fs73ejs8o0
+          CODEX_SERVICE_ID: srv-d8n52djbc2fs73ejs7fg
+        run: |
+          set -e
+          trigger_and_wait() {
+            local svc=$1
+            local name=$2
+            echo "==> Triggering deploy for $name..."
+            deploy_id=$(curl -sf -X POST \
+              -H "Authorization: Bearer $RENDER_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{"clearCache":"do_not_clear"}' \
+              "https://api.render.com/v1/services/$svc/deploys" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('deploy',d)['id'])")
+            echo "Deploy ID: $deploy_id"
+            for i in $(seq 1 40); do
+              sleep 15
+              status=$(curl -sf \
+                -H "Authorization: Bearer $RENDER_API_KEY" \
+                "https://api.render.com/v1/services/$svc/deploys/$deploy_id" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('deploy',d)['status'])")
+              echo "  [$i] $name status: $status"
+              if [ "$status" = "live" ]; then echo "  $name deployed successfully"; return 0; fi
+              if [[ "$status" == *failed* ]] || [ "$status" = "deactivated" ]; then
+                echo "  ERROR: $name deploy failed with status: $status"; return 1
+              fi
+            done
+            echo "  ERROR: $name deploy timed out after 10 minutes"; return 1
+          }
+          trigger_and_wait "$WEB_SERVICE_ID" "sdlc-harness-web"
+          trigger_and_wait "$CODEX_SERVICE_ID" "sdlc-harness-codex"

@@ -21,6 +21,11 @@ RUN npm ci --only=production
 
 COPY dist/ ./dist/
 
+# Run as non-root user
+RUN addgroup --system --gid 1001 nodejs \
+    && adduser --system --uid 1001 --ingroup nodejs appuser
+USER appuser
+
 EXPOSE 3001
 
 ENV NODE_ENV=production
