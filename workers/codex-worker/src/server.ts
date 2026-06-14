@@ -128,7 +128,7 @@ async function processJob(
       `Notion ticket: ${job.ticketId}`,
     ].join('\n');
 
-    const prUrl = createPR(
+    const prUrl = await createPR(
       workDir,
       `fix: ${job.ticketTitle}`,
       prBody,

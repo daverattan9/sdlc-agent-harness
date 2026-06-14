@@ -9,6 +9,7 @@
     "dev": "tsx src/server.ts"
   },
   "dependencies": {
+    "@openai/codex": "latest",
     "express": "^4.18.0",
     "uuid": "^9.0.0"
   },

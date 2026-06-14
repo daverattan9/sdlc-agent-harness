@@ -28,7 +28,11 @@ function validateSafeIdent(value: string, label: string): void {
 
 export function cloneRepo(repoUrl: string, workDir: string): void {
   validateRepoUrl(repoUrl);
-  execFileSync('git', ['clone', repoUrl, workDir], { stdio: 'inherit' });
+  const token = process.env.GITHUB_TOKEN;
+  if (!token) throw new Error('GITHUB_TOKEN is required for clone');
+  // Embed token so the cloned remote can also push without separate credential setup.
+  const authedUrl = repoUrl.replace('https://', `https://${token}@`);
+  execFileSync('git', ['clone', authedUrl, workDir], { stdio: 'inherit' });
 }
 
 export function createBranch(workDir: string, branchName: string, baseBranch: string): void {
@@ -46,27 +50,45 @@ export function commitAndPush(workDir: string, branchName: string, message: stri
   execFileSync('git', ['-C', workDir, 'push', 'origin', branchName], { stdio: 'inherit' });
 }
 
-export function createPR(
-  workDir: string,
+/** Create a pull request via the GitHub REST API — no gh CLI required. */
+export async function createPR(
+  _workDir: string,
   title: string,
   body: string,
   branchName: string,
   baseBranch: string,
-): string {
+): Promise<string> {
   validateSafeIdent(branchName, 'branchName');
   validateSafeIdent(baseBranch, 'baseBranch');
+
+  const token = process.env.GITHUB_TOKEN;
+  const repo  = process.env.GITHUB_REPO; // "owner/repo"
+  if (!token || !repo) throw new Error('GITHUB_TOKEN and GITHUB_REPO are required');
+
   const safeTitle = sanitiseArg(title);
-  const safeBody = sanitiseArg(body);
-  const result = execFileSync(
-    'gh',
-    [
-      'pr', 'create',
-      '--title', safeTitle,
-      '--body', safeBody,
-      '--base', baseBranch,
-      '--head', branchName,
-    ],
-    { cwd: workDir, encoding: 'utf8' },
-  );
-  return result.trim();
+  const safeBody  = sanitiseArg(body);
+
+  const response = await fetch(`https://api.github.com/repos/${repo}/pulls`, {
+    method: 'POST',
+    headers: {
+      Authorization: `token ${token}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/vnd.github.v3+json',
+      'User-Agent': 'sdlc-codex-worker/1.0',
+    },
+    body: JSON.stringify({
+      title: safeTitle,
+      body:  safeBody,
+      head:  branchName,
+      base:  baseBranch,
+    }),
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`GitHub API ${response.status}: ${err}`);
+  }
+
+  const data = (await response.json()) as { html_url: string };
+  return data.html_url;
 }
