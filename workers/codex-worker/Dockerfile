@@ -1,3 +1,12 @@
+# Stage 1: compile TypeScript
+FROM node:20-slim AS builder
+WORKDIR /build
+COPY package*.json tsconfig.json ./
+RUN npm install
+COPY src/ ./src/
+RUN npm run build
+
+# Stage 2: production image
 FROM node:20-slim
 
 WORKDIR /app
@@ -19,14 +28,14 @@ RUN git config --global user.email "codex-worker@sdlc-harness.internal" \
 COPY package*.json ./
 RUN npm ci --only=production
 
-COPY dist/ ./dist/
+COPY --from=builder /build/dist/ ./dist/
 
 # Run as non-root user
 RUN addgroup --system --gid 1001 nodejs \
     && adduser --system --uid 1001 --ingroup nodejs appuser
 USER appuser
 
-EXPOSE 3001
+EXPOSE 10000
 
 ENV NODE_ENV=production
 
