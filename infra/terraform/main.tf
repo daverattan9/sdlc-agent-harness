@@ -54,8 +54,8 @@ resource "render_web_service" "web" {
     # ElevenLabs
     ELEVENLABS_WEBHOOK_SECRET         = { secret = true, value = var.elevenlabs_webhook_secret }
     NEXT_PUBLIC_ELEVENLABS_AGENT_ID   = { value = var.elevenlabs_agent_id }
-    # Anthropic / Claude
-    ANTHROPIC_API_KEY = { secret = true, value = var.anthropic_api_key }
+    # OpenAI (research agent + Codex)
+    OPENAI_API_KEY = { secret = true, value = var.openai_api_key }
     # GitHub
     GITHUB_TOKEN          = { secret = true, value = var.github_token }
     GITHUB_REPO           = { value = var.github_repo }

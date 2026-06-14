@@ -96,12 +96,6 @@ variable "elevenlabs_agent_id" {
 }
 
 # AI
-variable "anthropic_api_key" {
-  description = "Anthropic API key for Claude"
-  type        = string
-  sensitive   = true
-}
-
 variable "openai_api_key" {
   description = "OpenAI API key for Codex CLI"
   type        = string
