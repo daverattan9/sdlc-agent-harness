@@ -13,7 +13,11 @@ const nextConfig: NextConfig = {
   // three / @react-three/* use browser globals (WebGL, canvas) at import time.
   // Turbopack dev mode needs explicit transpilation to avoid corrupting the
   // React Client Manifest and causing the global-error SSR crash.
-  transpilePackages: ['three', '@react-three/fiber', '@react-three/drei'],
+  // three/@react-three/fiber use browser globals at module scope — transpile so
+  // Turbopack dev-mode doesn't corrupt the React Client Manifest.
+  // @react-three/drei is intentionally excluded: its source imports next/document
+  // (for the drei Html component) which triggers a Next.js invariant error.
+  transpilePackages: ['three', '@react-three/fiber'],
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }];
   },
