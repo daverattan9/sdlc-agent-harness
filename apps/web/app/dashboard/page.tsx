@@ -1,6 +1,5 @@
-import Script from 'next/script';
 import MetricCard from '@/components/dashboard/MetricCard';
-import CallSupportButton from '@/components/voice/CallSupportButton';
+import VoiceOrb from '@/components/voice/CallSupportButton';
 import { getDashboardMetrics } from '@/lib/metrics';
 import { auth0 } from '@/lib/auth0';
 
@@ -13,8 +12,6 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <Script src="https://elevenlabs.io/convai-widget/index.js" strategy="lazyOnload" />
-
       <div style={{ backgroundColor: '#0F0F13', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
         {/* Header */}
@@ -151,29 +148,28 @@ export default async function DashboardPage() {
           <div style={{ height: '1px', backgroundColor: '#1A1927', marginBottom: '1.25rem' }} />
 
           {/* Bottom bar */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span
-                  className="live-dot"
-                  style={{
-                    width: '6px', height: '6px', borderRadius: '50%',
-                    backgroundColor: '#4ADE80', display: 'inline-block', flexShrink: 0,
-                  }}
-                />
-                <span style={{ fontSize: '0.8125rem', color: '#6C6A7C', fontFamily: 'var(--font-sans)' }}>
-                  Live
-                </span>
-              </div>
-              <span style={{ fontSize: '0.8125rem', color: '#464456', fontFamily: 'var(--font-mono)' }}>
-                Updated just now
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span
+                className="live-dot"
+                style={{
+                  width: '6px', height: '6px', borderRadius: '50%',
+                  backgroundColor: '#4ADE80', display: 'inline-block', flexShrink: 0,
+                }}
+              />
+              <span style={{ fontSize: '0.8125rem', color: '#6C6A7C', fontFamily: 'var(--font-sans)' }}>
+                Live
               </span>
             </div>
-
-            <CallSupportButton agentId={process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID} />
+            <span style={{ fontSize: '0.8125rem', color: '#464456', fontFamily: 'var(--font-mono)' }}>
+              Updated just now
+            </span>
           </div>
         </main>
       </div>
+
+      {/* Floating voice orb — fixed bottom-right, rendered over the page */}
+      <VoiceOrb agentId={process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID} />
     </>
   );
 }
