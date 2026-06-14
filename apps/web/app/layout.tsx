@@ -1,26 +1,23 @@
 import type { Metadata } from 'next';
-import { Bebas_Neue, IBM_Plex_Mono, Geist } from 'next/font/google';
+import { DM_Sans, DM_Mono } from 'next/font/google';
 import './globals.css';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-
-const bebasNeue = Bebas_Neue({
-  weight: '400',
+const dmSans = DM_Sans({
   subsets: ['latin'],
-  variable: '--font-bebas',
+  variable: '--font-sans',
   display: 'swap',
 });
 
-const ibmPlexMono = IBM_Plex_Mono({
-  weight: ['400', '500', '600'],
+const dmMono = DM_Mono({
+  weight: ['300', '400', '500'],
   subsets: ['latin'],
-  variable: '--font-ibm-mono',
+  variable: '--font-mono',
   display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: 'Mission Control — Analytics',
+  title: 'Analytics',
   description: 'Real-time business analytics dashboard',
 };
 
@@ -30,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("h-full", bebasNeue.variable, ibmPlexMono.variable, "font-sans", geist.variable)}>
+    <html lang="en" className={cn('h-full', dmSans.variable, dmMono.variable)}>
       <body className="h-full">{children}</body>
     </html>
   );

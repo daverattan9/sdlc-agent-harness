@@ -96,7 +96,7 @@ export function getDashboardMetrics(): DashboardMetric[] {
       rawValue: conversionRate,
       unit: '%',
       trend: -99.9,
-      trendLabel: 'critical anomaly',
+      trendLabel: 'vs last month',
       isBuggy: true,
     },
   ];

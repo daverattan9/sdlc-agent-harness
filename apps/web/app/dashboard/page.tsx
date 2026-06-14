@@ -4,259 +4,176 @@ import CallSupportButton from '@/components/voice/CallSupportButton';
 import { getDashboardMetrics } from '@/lib/metrics';
 import { auth0 } from '@/lib/auth0';
 
-const ANIMATION_CLASSES = [
-  'animate-card-1',
-  'animate-card-2',
-  'animate-card-3',
-  'animate-card-4',
-];
+const ANIMATION_CLASSES = ['animate-card-1', 'animate-card-2', 'animate-card-3', 'animate-card-4'];
 
 export default async function DashboardPage() {
   const metrics = getDashboardMetrics();
   const session = await auth0.getSession().catch(() => null);
+  const userLabel = session?.user?.name ?? session?.user?.email ?? '';
 
   return (
     <>
-      {/* ElevenLabs Conversational AI widget script */}
-      <Script
-        src="https://elevenlabs.io/convai-widget/index.js"
-        strategy="lazyOnload"
-      />
+      <Script src="https://elevenlabs.io/convai-widget/index.js" strategy="lazyOnload" />
 
-      <main
-        className="grid-texture relative flex min-h-screen flex-col"
-        style={{ backgroundColor: '#060a12' }}
-      >
-        {/* Top accent line */}
-        <div
-          className="h-px w-full"
-          style={{
-            background:
-              'linear-gradient(90deg, transparent 0%, rgba(0, 201, 110, 0.6) 30%, rgba(0, 201, 110, 0.6) 70%, transparent 100%)',
-          }}
-        />
+      <div style={{ backgroundColor: '#0F0F13', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
         {/* Header */}
         <header
-          className="animate-header flex items-center justify-between border-b px-8 py-5"
-          style={{ borderColor: '#1a2d50' }}
+          className="animate-header"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 2rem',
+            height: '56px',
+            borderBottom: '1px solid #1A1927',
+            backgroundColor: '#0F0F13',
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+          }}
         >
-          <div className="flex items-center gap-4">
-            {/* Logo mark */}
+          {/* Logo + wordmark */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
             <div
-              className="flex h-8 w-8 items-center justify-center rounded-sm"
-              style={{ backgroundColor: '#00c96e', color: '#060a12' }}
+              style={{
+                width: '24px', height: '24px', borderRadius: '5px',
+                background: 'linear-gradient(135deg, #8B7CF8 0%, #6B5ED0 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <rect x="2" y="2" width="5" height="5" fill="currentColor" />
-                <rect x="9" y="2" width="5" height="5" fill="currentColor" opacity="0.5" />
-                <rect x="2" y="9" width="5" height="5" fill="currentColor" opacity="0.5" />
-                <rect x="9" y="9" width="5" height="5" fill="currentColor" />
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <rect x="1.5" y="1.5" width="4" height="4" rx="0.75" fill="white" />
+                <rect x="6.5" y="1.5" width="4" height="4" rx="0.75" fill="white" opacity="0.5" />
+                <rect x="1.5" y="6.5" width="4" height="4" rx="0.75" fill="white" opacity="0.5" />
+                <rect x="6.5" y="6.5" width="4" height="4" rx="0.75" fill="white" />
               </svg>
             </div>
-
-            <div>
-              <div
-                style={{
-                  fontFamily: 'var(--font-bebas)',
-                  fontSize: '1.5rem',
-                  color: '#d9e4f0',
-                  letterSpacing: '0.15em',
-                  lineHeight: 1,
-                }}
-              >
-                MISSION CONTROL
-              </div>
-              <div
-                className="text-xs tracking-widest"
-                style={{ color: '#4a6484', fontFamily: 'var(--font-ibm-mono)' }}
-              >
-                ANALYTICS DASHBOARD — LIVE
-              </div>
-            </div>
+            <span
+              style={{
+                fontSize: '0.9375rem',
+                fontWeight: 600,
+                color: '#E9E8EE',
+                letterSpacing: '-0.01em',
+                fontFamily: 'var(--font-sans)',
+              }}
+            >
+              Analytics
+            </span>
           </div>
 
-          {/* Right side: status + user + date */}
-          <div className="flex items-center gap-6">
-            {/* System status */}
-            <div className="flex items-center gap-2">
+          {/* Right: user + logout */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+            {userLabel && (
               <span
-                className="badge-blink h-2 w-2 rounded-full"
-                style={{ backgroundColor: '#ff3535' }}
-              />
-              <span
-                className="text-xs font-semibold tracking-widest"
-                style={{ color: '#ff3535', fontFamily: 'var(--font-ibm-mono)' }}
+                style={{
+                  fontSize: '0.8125rem',
+                  color: '#6C6A7C',
+                  fontFamily: 'var(--font-sans)',
+                }}
               >
-                1 ANOMALY
+                {userLabel}
               </span>
-            </div>
-
-            <div
-              className="h-4 w-px"
-              style={{ backgroundColor: '#1a2d50' }}
-            />
-
-            {/* Authenticated user info */}
-            {session?.user && (
-              <>
-                <div className="text-right">
-                  <div
-                    className="text-xs tracking-widest"
-                    style={{ color: '#d9e4f0', fontFamily: 'var(--font-ibm-mono)' }}
-                  >
-                    {session.user.name ?? session.user.email}
-                  </div>
-                  {session.user.name && session.user.email && (
-                    <div
-                      className="text-xs tracking-widest"
-                      style={{ color: '#4a6484', fontFamily: 'var(--font-ibm-mono)' }}
-                    >
-                      {session.user.email}
-                    </div>
-                  )}
-                </div>
-                <a
-                  href="/auth/logout"
-                  className="logout-link"
-                >
-                  LOGOUT
-                </a>
-                <div
-                  className="h-4 w-px"
-                  style={{ backgroundColor: '#1a2d50' }}
-                />
-              </>
             )}
-
-            {/* Separator */}
-            <div className="text-right">
-              <div
-                className="text-xs tracking-widest"
-                style={{ color: '#4a6484', fontFamily: 'var(--font-ibm-mono)' }}
-              >
-                SYS/REV 4.2.1
-              </div>
-              <div
-                className="text-xs tracking-widest"
-                style={{ color: '#263347', fontFamily: 'var(--font-ibm-mono)' }}
-              >
-                JUNE 2026
-              </div>
-            </div>
+            <a href="/auth/logout" className="logout-link">Sign out</a>
           </div>
         </header>
 
-        {/* Main content */}
-        <div className="flex flex-1 flex-col gap-8 px-8 py-8">
-          {/* Section label */}
-          <div className="flex items-center gap-4">
+        {/* Main */}
+        <main style={{ flex: 1, padding: '2.5rem 2rem 2rem', maxWidth: '1200px', width: '100%', margin: '0 auto' }}>
+
+          {/* Page heading */}
+          <div
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              marginBottom: '2rem',
+            }}
+          >
+            <div>
+              <h1
+                style={{
+                  fontSize: '1.25rem', fontWeight: 600, color: '#E9E8EE',
+                  letterSpacing: '-0.02em', margin: 0, fontFamily: 'var(--font-sans)',
+                }}
+              >
+                Overview
+              </h1>
+              <p
+                style={{
+                  fontSize: '0.8125rem', color: '#6C6A7C', margin: '0.25rem 0 0',
+                  fontFamily: 'var(--font-sans)',
+                }}
+              >
+                Business performance · Last 30 days
+              </p>
+            </div>
+
+            {/* Period pill */}
             <div
-              className="h-px flex-1"
-              style={{ backgroundColor: '#1a2d50' }}
-            />
-            <span
-              className="text-xs tracking-[0.3em]"
-              style={{ color: '#263347', fontFamily: 'var(--font-ibm-mono)' }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.375rem',
+                padding: '0.375rem 0.75rem',
+                borderRadius: '6px', border: '1px solid #242331',
+                backgroundColor: '#16151D',
+                fontSize: '0.8125rem', color: '#6C6A7C',
+                fontFamily: 'var(--font-sans)',
+                userSelect: 'none',
+              }}
             >
-              CORE METRICS
-            </span>
-            <div
-              className="h-px flex-1"
-              style={{ backgroundColor: '#1a2d50' }}
-            />
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M5 1.5V4M11 1.5V4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                <path d="M2 7H14" stroke="currentColor" strokeWidth="1.5" />
+              </svg>
+              Jun 2026
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.5 }}>
+                <path d="M2.5 4L5 6.5L7.5 4" stroke="currentColor" strokeWidth="1.5"
+                  strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
           </div>
 
-          {/* Metric cards grid */}
-          <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {/* Metric cards */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))',
+              gap: '1rem',
+              marginBottom: '2.5rem',
+            }}
+          >
             {metrics.map((metric, i) => (
-              <MetricCard
-                key={metric.id}
-                metric={metric}
-                animationClass={ANIMATION_CLASSES[i]}
-              />
+              <MetricCard key={metric.id} metric={metric} animationClass={ANIMATION_CLASSES[i]} />
             ))}
           </div>
 
-          {/* Bottom status bar */}
-          <div
-            className="flex items-center justify-between rounded-lg border px-5 py-3"
-            style={{
-              borderColor: '#1a2d50',
-              backgroundColor: '#0b1422',
-              fontFamily: 'var(--font-ibm-mono)',
-            }}
-          >
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
+          {/* Divider */}
+          <div style={{ height: '1px', backgroundColor: '#1A1927', marginBottom: '1.25rem' }} />
+
+          {/* Bottom bar */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span
-                  className="status-dot h-1.5 w-1.5 rounded-full"
-                  style={{ backgroundColor: '#00c96e' }}
+                  className="live-dot"
+                  style={{
+                    width: '6px', height: '6px', borderRadius: '50%',
+                    backgroundColor: '#4ADE80', display: 'inline-block', flexShrink: 0,
+                  }}
                 />
-                <span className="text-xs tracking-widest" style={{ color: '#4a6484' }}>
-                  DATA STREAM ACTIVE
+                <span style={{ fontSize: '0.8125rem', color: '#6C6A7C', fontFamily: 'var(--font-sans)' }}>
+                  Live
                 </span>
               </div>
-              <div className="hidden items-center gap-2 sm:flex">
-                <span className="text-xs tracking-widest" style={{ color: '#263347' }}>
-                  LAST SYNC: 00:00:12 AGO
-                </span>
-              </div>
+              <span style={{ fontSize: '0.8125rem', color: '#464456', fontFamily: 'var(--font-mono)' }}>
+                Updated just now
+              </span>
             </div>
 
-            <div className="flex items-center gap-4">
-              {/* Incident notice */}
-              <div
-                className="hidden items-center gap-2 rounded-md border px-3 py-1.5 text-xs sm:flex"
-                style={{
-                  borderColor: 'rgba(255, 53, 53, 0.3)',
-                  backgroundColor: 'rgba(255, 53, 53, 0.05)',
-                  color: 'rgba(255, 53, 53, 0.8)',
-                }}
-              >
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M6 1L11 10H1L6 1Z" stroke="currentColor" strokeWidth="1.2" />
-                  <path d="M6 4.5V7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                  <circle cx="6" cy="8.5" r="0.5" fill="currentColor" />
-                </svg>
-                CONVERSION RATE METRIC REQUIRES ATTENTION
-              </div>
-
-              <CallSupportButton agentId={process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID} />
-            </div>
+            <CallSupportButton agentId={process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID} />
           </div>
-        </div>
-
-        {/* Corner decorations */}
-        <div
-          className="pointer-events-none absolute left-0 top-0 h-16 w-16"
-          style={{
-            borderTop: '1px solid rgba(0, 201, 110, 0.3)',
-            borderLeft: '1px solid rgba(0, 201, 110, 0.3)',
-          }}
-        />
-        <div
-          className="pointer-events-none absolute right-0 top-0 h-16 w-16"
-          style={{
-            borderTop: '1px solid rgba(0, 201, 110, 0.3)',
-            borderRight: '1px solid rgba(0, 201, 110, 0.3)',
-          }}
-        />
-        <div
-          className="pointer-events-none absolute bottom-0 left-0 h-16 w-16"
-          style={{
-            borderBottom: '1px solid rgba(0, 201, 110, 0.3)',
-            borderLeft: '1px solid rgba(0, 201, 110, 0.3)',
-          }}
-        />
-        <div
-          className="pointer-events-none absolute bottom-0 right-0 h-16 w-16"
-          style={{
-            borderBottom: '1px solid rgba(0, 201, 110, 0.3)',
-            borderRight: '1px solid rgba(0, 201, 110, 0.3)',
-          }}
-        />
-      </main>
+        </main>
+      </div>
     </>
   );
 }
