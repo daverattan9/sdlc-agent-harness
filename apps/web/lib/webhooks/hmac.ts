@@ -41,7 +41,10 @@ export function validateElevenLabsSignature(
 ): boolean {
   // Parse header: "t=1234567890,v1=abc123..."
   const parts = Object.fromEntries(
-    signatureHeader.split(',').map((p) => p.split('=') as [string, string])
+    signatureHeader.split(',').map((p) => {
+      const idx = p.indexOf('=');
+      return [p.slice(0, idx), p.slice(idx + 1)] as [string, string];
+    })
   );
   const timestamp = parts['t'];
   const v1 = parts['v1'];

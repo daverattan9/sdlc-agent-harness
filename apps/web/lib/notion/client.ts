@@ -16,4 +16,8 @@ export function getNotion(): Client {
   return _notion;
 }
 
-export const NOTION_DATABASE_ID = process.env.NOTION_DATABASE_ID ?? '';
+export function getNotionDatabaseId(): string {
+  const id = process.env.NOTION_DATABASE_ID;
+  if (!id) throw new Error('NOTION_DATABASE_ID environment variable is required');
+  return id;
+}

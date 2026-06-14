@@ -23,10 +23,15 @@ export async function POST(req: NextRequest) {
   const rawBody = await req.text();
 
   const signatureHeader = req.headers.get('elevenlabs-signature') ?? '';
-  const secret = process.env.ELEVENLABS_WEBHOOK_SECRET ?? '';
+  const secret = process.env.ELEVENLABS_WEBHOOK_SECRET;
 
-  // Validate signature (skip in dev if secret not configured)
-  if (secret && !validateElevenLabsSignature(rawBody, signatureHeader, secret)) {
+  // Signature validation is always required — reject if secret is not configured
+  if (!secret) {
+    console.error('ELEVENLABS_WEBHOOK_SECRET is not configured');
+    return NextResponse.json({ error: 'Webhook not configured' }, { status: 503 });
+  }
+
+  if (!validateElevenLabsSignature(rawBody, signatureHeader, secret)) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
   }
 
@@ -49,22 +54,27 @@ export async function POST(req: NextRequest) {
 
   // Extract bug description from analysis or transcript
   const bugDescription =
-    payload.analysis?.summary ??
-    'Bug reported via voice support call';
+    payload.analysis?.summary ?? 'Bug reported via voice support call';
 
-  const ticketId = `TICKET-${uuidv4().split('-')[0].toUpperCase()}`;
+  // Use full UUID for collision-free ticket IDs
+  const ticketId = `TICKET-${uuidv4()}`;
 
-  const notionPageId = await createBugTicket({
-    title: `Bug Report: ${bugDescription.slice(0, 80)}`,
-    description: bugDescription,
-    transcript: transcriptText,
-    reporterId: payload.metadata?.user_id ?? payload.conversation_id,
-    ticketId,
-  });
+  try {
+    const notionPageId = await createBugTicket({
+      title: `Bug Report: ${bugDescription.slice(0, 80)}`,
+      description: bugDescription,
+      transcript: transcriptText,
+      reporterId: payload.metadata?.user_id ?? payload.conversation_id,
+      ticketId,
+    });
 
-  return NextResponse.json({
-    ok: true,
-    ticketId,
-    notionPageId,
-  });
+    return NextResponse.json({
+      ok: true,
+      ticketId,
+      notionPageId,
+    });
+  } catch (err) {
+    console.error('Failed to create Notion ticket:', err);
+    return NextResponse.json({ error: 'Failed to create ticket' }, { status: 500 });
+  }
 }

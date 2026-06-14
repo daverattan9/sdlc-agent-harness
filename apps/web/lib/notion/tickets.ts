@@ -1,4 +1,4 @@
-import { getNotion, NOTION_DATABASE_ID } from './client';
+import { getNotion, getNotionDatabaseId } from './client';
 
 type UpdatePageProperties = NonNullable<Parameters<ReturnType<typeof getNotion>['pages']['update']>[0]['properties']>;
 
@@ -27,7 +27,7 @@ export interface UpdateTicketInput {
 export async function createBugTicket(input: CreateTicketInput): Promise<string> {
   const notion = getNotion();
   const response = await notion.pages.create({
-    parent: { database_id: NOTION_DATABASE_ID },
+    parent: { database_id: getNotionDatabaseId() },
     properties: {
       Title: {
         title: [{ text: { content: input.title } }],
