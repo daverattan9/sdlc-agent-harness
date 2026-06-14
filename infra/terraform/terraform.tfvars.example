@@ -1,0 +1,29 @@
+# Copy to terraform.tfvars and fill in values
+# NEVER commit terraform.tfvars to git
+
+render_api_key   = "rnd_xxxxxxxxxxxx"
+render_owner_id  = "usr_xxxxxxxxxxxx"
+render_region    = "oregon"
+
+github_repo_url  = "https://github.com/YOUR_ORG/sdlc-project"
+github_repo      = "YOUR_ORG/sdlc-project"
+github_token     = "ghp_xxxxxxxxxxxx"
+github_webhook_secret = "generate-random-32-chars"
+
+auth0_secret        = "generate-random-32-chars"
+auth0_domain        = "your-tenant.auth0.com"
+auth0_client_id     = "xxxxxxxxxxxx"
+auth0_client_secret = "xxxxxxxxxxxx"
+app_base_url        = "https://sdlc-harness-web.onrender.com"
+
+notion_api_key      = "secret_xxxxxxxxxxxx"
+notion_database_id  = "xxxxxxxxxxxx"
+notion_webhook_secret = "generate-random-32-chars"
+
+elevenlabs_webhook_secret = "xxxxxxxxxxxx"
+elevenlabs_agent_id       = "xxxxxxxxxxxx"
+
+anthropic_api_key = "sk-ant-xxxxxxxxxxxx"
+openai_api_key    = "sk-xxxxxxxxxxxx"
+
+codex_worker_secret = "generate-random-32-chars"

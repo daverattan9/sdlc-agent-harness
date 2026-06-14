@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Next.js app
+        run: npm run build --workspace=apps/web
+        env:
+          AUTH0_SECRET: ci-placeholder-secret-32-characters-x
+          AUTH0_DOMAIN: placeholder.auth0.com
+          AUTH0_CLIENT_ID: placeholder
+          AUTH0_CLIENT_SECRET: placeholder
+          APP_BASE_URL: http://localhost:3000
+          NOTION_API_KEY: placeholder
+          NOTION_DATABASE_ID: placeholder
+          NOTION_WEBHOOK_SECRET: placeholder
+          ELEVENLABS_WEBHOOK_SECRET: placeholder
+          ANTHROPIC_API_KEY: placeholder
+          GITHUB_REPO: placeholder/placeholder
+          GITHUB_WEBHOOK_SECRET: placeholder
+          CODEX_WORKER_URL: http://localhost:3001
+          CODEX_WORKER_SECRET: placeholder
+
+      - name: Build Codex worker
+        run: npm run build --workspace=workers/codex-worker
+
+      - name: Run tests
+        run: npm test --workspace=apps/web --if-present
