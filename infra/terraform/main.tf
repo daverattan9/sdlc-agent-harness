@@ -55,7 +55,7 @@ resource "render_web_service" "web" {
     native_runtime = {
       auto_deploy   = true
       branch        = "main"
-      build_command = "npm ci --workspace=apps/web && npm run build --workspace=apps/web"
+      build_command = "npm install --no-audit --include=dev && npm run build --workspace=apps/web"
       build_filter = {
         paths = ["apps/web/**"]
       }
