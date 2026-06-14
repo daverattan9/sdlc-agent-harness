@@ -10,6 +10,10 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // three / @react-three/* use browser globals (WebGL, canvas) at import time.
+  // Turbopack dev mode needs explicit transpilation to avoid corrupting the
+  // React Client Manifest and causing the global-error SSR crash.
+  transpilePackages: ['three', '@react-three/fiber', '@react-three/drei'],
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }];
   },
