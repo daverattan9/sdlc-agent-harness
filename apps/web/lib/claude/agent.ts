@@ -252,7 +252,7 @@ export async function runResearchAgent(input: AgentInput): Promise<AgentResult> 
     `Focus on TypeScript/JavaScript files in apps/web/lib/`;
 
   const { steps } = await generateText({
-    model: openai('gpt-4o'),
+    model: openai('gpt-4o-mini'),
     system: systemPrompt,
     prompt:
       `Investigate this bug ticket (Notion page ID: ${input.notionPageId}):\n\n` +
