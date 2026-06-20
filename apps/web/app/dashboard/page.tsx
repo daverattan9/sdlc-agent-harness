@@ -1,5 +1,5 @@
 import MetricCard from '@/components/dashboard/MetricCard';
-import VoiceOrb from '@/components/voice/VoiceOrbLoader';
+import VoiceSupport from '@/components/voice/VoiceSupport';
 import { getDashboardMetrics } from '@/lib/metrics';
 import { auth0 } from '@/lib/auth0';
 
@@ -166,10 +166,11 @@ export default async function DashboardPage() {
             </span>
           </div>
         </main>
-      </div>
 
-      {/* Floating voice orb — fixed bottom-right, rendered over the page */}
-      <VoiceOrb agentId={process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID} />
+        {process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID && (
+          <VoiceSupport agentId={process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID} />
+        )}
+      </div>
     </>
   );
 }
