@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { validateElevenLabsSignature } from '@/lib/webhooks/hmac';
+import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 import { createBugTicket } from '@/lib/notion/tickets';
 
 export interface ElevenLabsWebhookPayload {
@@ -55,7 +55,6 @@ export function extractTicketData(payload: ElevenLabsWebhookPayload) {
 
 export async function POST(req: NextRequest) {
   const rawBody = await req.text();
-
   const signatureHeader = req.headers.get('elevenlabs-signature') ?? '';
   const secret = process.env.ELEVENLABS_WEBHOOK_SECRET;
 
@@ -64,16 +63,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Webhook not configured' }, { status: 503 });
   }
 
-  if (!validateElevenLabsSignature(rawBody, signatureHeader, secret)) {
+  const client = new ElevenLabsClient({ apiKey: 'unused' });
+  let event: Record<string, unknown>;
+  try {
+    event = await client.webhooks.constructEvent(rawBody, signatureHeader, secret);
+  } catch (err) {
+    console.error('ElevenLabs webhook signature validation failed:', err);
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
   }
 
-  let payload: ElevenLabsWebhookPayload;
-  try {
-    payload = JSON.parse(rawBody) as ElevenLabsWebhookPayload;
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
-  }
+  const payload = event as unknown as ElevenLabsWebhookPayload;
 
   if (payload.type !== 'post_call_transcription') {
     return NextResponse.json({ ok: true, message: 'Event ignored' });
