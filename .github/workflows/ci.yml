@@ -93,4 +93,6 @@ jobs:
             echo "  ERROR: $name deploy timed out after 10 minutes"; return 1
           }
           trigger_and_wait "$WEB_SERVICE_ID" "sdlc-harness-web"
-          trigger_and_wait "$CODEX_SERVICE_ID" "sdlc-harness-codex"
+          # Codex worker Docker build is currently broken (see CLAUDE.md).
+          # Skipping until the Dockerfile/OOM issue is resolved.
+          # trigger_and_wait "$CODEX_SERVICE_ID" "sdlc-harness-codex"
