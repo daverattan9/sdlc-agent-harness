@@ -66,7 +66,7 @@ sdlc-project/
 ### Application code (all merged to main)
 - **Auth0 v4** login/logout/callback via `proxy.ts` middleware; `/dashboard` protected
 - **Analytics dashboard** at `/dashboard` with planted bug: `conversionRate = 0.00%`
-- **ElevenLabs webhook** (`/api/elevenlabs`): HMAC-validated, creates Notion ticket with status `Reported`
+- **ElevenLabs webhook** (`/api/elevenlabs`): HMAC-validated, handles `post_call_transcription` events, extracts structured fields from `data.analysis.data_collection_results` (bug_title, description, steps_to_reproduce, severity, affected_area), creates Notion ticket with status `Reported`
 - **Notion webhook** (`/api/notion`): HMAC-validated, handles status changes (`Triaged` → dispatches Claude, `In Progress` → dispatches Codex)
 - **Claude research agent** (`/api/claude`): uses `gpt-4o-mini` via Vercel AI SDK + Notion MCP, writes findings back to ticket
 - **Codex worker dispatcher** (`/api/codex`): timing-safe auth, forwards job to Codex Docker worker
@@ -154,7 +154,12 @@ Must be done manually in Notion UI. Two automations needed on the "Bug Tickets" 
 ### 4. ElevenLabs agent — dashboard configuration required
 The ElevenLabs agent (`agent_1801kv2dcs87efhbejnbd9axhkk2`) needs to be configured in the ElevenLabs dashboard.
 
-**A. Data Collection fields** (Analysis > Data Collection in agent settings):
+**A. Post-call webhook** (Developers > Webhooks):
+- URL: `https://sdlc-harness-web.onrender.com/api/elevenlabs`
+- Auth type: `hmac`
+- Event: enable `transcript` (triggers `post_call_transcription` payload)
+
+**B. Data Collection fields** (Agent > Analysis > Data Collection):
 | Field | Type | Prompt for the agent |
 |-------|------|---------------------|
 | `bug_title` | string | "A short one-line title for the bug" |
@@ -163,14 +168,9 @@ The ElevenLabs agent (`agent_1801kv2dcs87efhbejnbd9axhkk2`) needs to be configur
 | `severity` | string (enum: low/medium/high/critical) | "Issue severity" |
 | `affected_area` | string | "Which part of the app is affected" |
 
-**B. Post-call webhook** (Settings > Webhooks):
-- URL: `https://sdlc-harness-web.onrender.com/api/elevenlabs`
-- Events: `conversation_ended`
-- Secret: value of `ELEVENLABS_WEBHOOK_SECRET` env var
+**C. Payload structure**: fields arrive at `data.analysis.data_collection_results`, transcript at `data.transcript`, summary at `data.analysis.transcript_summary`
 
-**C. Agent prompt guidance**: Instruct the agent to collect all five data collection fields (bug_title, description, steps_to_reproduce, severity, affected_area) before ending the call. The agent should confirm each field with the user.
-
-**D. Dev testing**: Use `POST /api/elevenlabs/test` (dev only, returns 404 in production) to create test tickets without a real voice call. See `apps/web/app/api/elevenlabs/test/route.ts`.
+**D. Dev testing**: Use `POST /api/elevenlabs/test` (dev only, returns 404 in production) to create test tickets without a real voice call. Send a full `ElevenLabsWebhookPayload` JSON body.
 
 ### 5. End-to-end pipeline — never tested
 No full run of the 10-step flow has been completed.
