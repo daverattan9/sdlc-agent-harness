@@ -81,6 +81,7 @@ export async function POST(req: NextRequest) {
   const { data } = payload;
 
   const transcriptText = (data.transcript ?? [])
+    .filter((t) => t.message)
     .map((t) => `${t.role.toUpperCase()}: ${t.message}`)
     .join('\n');
 
