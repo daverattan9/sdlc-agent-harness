@@ -4,45 +4,25 @@ import { extractTicketData } from '../route';
 import { createBugTicket } from '@/lib/notion/tickets';
 import type { ElevenLabsWebhookPayload } from '../route';
 
-interface TestPayload {
-  data_collection?: Record<string, unknown>;
-  summary?: string;
-  transcript?: Array<{ role: string; message: string }>;
-}
-
 export async function POST(req: NextRequest) {
   if (process.env.NODE_ENV === 'production') {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  let body: TestPayload;
+  let payload: ElevenLabsWebhookPayload;
   try {
-    body = (await req.json()) as TestPayload;
+    payload = (await req.json()) as ElevenLabsWebhookPayload;
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  // Build a synthetic webhook payload from the test input
-  const payload: ElevenLabsWebhookPayload = {
-    type: 'conversation_ended',
-    conversation_id: `test-${uuidv4()}`,
-    agent_id: 'test-agent',
-    transcript: body.transcript ?? [
-      { role: 'user', message: 'Test bug report' },
-      { role: 'agent', message: 'I will create a ticket for that.' },
-    ],
-    analysis: {
-      summary: body.summary,
-      data_collection: body.data_collection,
-    },
-  };
+  const { data } = payload;
 
-  const ticketData = extractTicketData(payload);
-
-  const transcriptText = (payload.transcript ?? [])
+  const transcriptText = (data.transcript ?? [])
     .map((t) => `${t.role.toUpperCase()}: ${t.message}`)
     .join('\n');
 
+  const ticketData = extractTicketData(payload);
   const ticketId = `TICKET-${uuidv4()}`;
 
   try {
@@ -50,7 +30,7 @@ export async function POST(req: NextRequest) {
       title: ticketData.title,
       description: ticketData.description,
       transcript: transcriptText,
-      reporterId: 'test-user',
+      reporterId: data.user_id ?? data.conversation_id,
       ticketId,
       stepsToReproduce: ticketData.stepsToReproduce,
       severity: ticketData.severity,
