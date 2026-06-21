@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { validateElevenLabsSignature } from '@/lib/webhooks/hmac';
+import crypto from 'crypto';
 import { createBugTicket } from '@/lib/notion/tickets';
 
 export interface ElevenLabsWebhookPayload {
@@ -55,7 +55,6 @@ export function extractTicketData(payload: ElevenLabsWebhookPayload) {
 
 export async function POST(req: NextRequest) {
   const rawBody = await req.text();
-
   const signatureHeader = req.headers.get('elevenlabs-signature') ?? '';
   const secret = process.env.ELEVENLABS_WEBHOOK_SECRET;
 
@@ -64,7 +63,41 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Webhook not configured' }, { status: 503 });
   }
 
-  if (!validateElevenLabsSignature(rawBody, signatureHeader, secret)) {
+  // Parse signature header: "t=<timestamp>,v1=<hmac>"
+  const sigParts = Object.fromEntries(
+    signatureHeader.split(',').map((p) => {
+      const idx = p.indexOf('=');
+      return [p.slice(0, idx), p.slice(idx + 1)] as [string, string];
+    })
+  );
+  const timestamp = sigParts['t'];
+  const v1 = sigParts['v1'];
+
+  if (!timestamp || !v1) {
+    console.error('ElevenLabs webhook: missing t or v1 in signature header:', signatureHeader);
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+  }
+
+  // Verify HMAC: signed payload is "<timestamp>.<body>"
+  const signedPayload = `${timestamp}.${rawBody}`;
+  const expected = crypto.createHmac('sha256', secret).update(signedPayload).digest('hex');
+
+  const isValid = (() => {
+    try {
+      return crypto.timingSafeEqual(Buffer.from(v1), Buffer.from(expected));
+    } catch {
+      return false;
+    }
+  })();
+
+  if (!isValid) {
+    console.error('ElevenLabs webhook HMAC mismatch', {
+      headerReceived: signatureHeader.slice(0, 50),
+      v1Length: v1.length,
+      expectedLength: expected.length,
+      secretPrefix: secret.slice(0, 10),
+      bodyLength: rawBody.length,
+    });
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
   }
 
