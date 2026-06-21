@@ -151,10 +151,26 @@ Must be done manually in Notion UI. Two automations needed on the "Bug Tickets" 
 
 **NOTION_WEBHOOK_SECRET** (from Render env vars): `f01ecd0e2fb1e9f9d084ca7ebe955e2835a98dad8fd579fb6...`
 
-### 4. ElevenLabs agent — not connected to webhook
-The ElevenLabs agent (`agent_1801kv2dcs87efhbejnbd9axhkk2`) needs to be configured in the ElevenLabs dashboard to POST conversation transcripts to:
+### 4. ElevenLabs agent — dashboard configuration required
+The ElevenLabs agent (`agent_1801kv2dcs87efhbejnbd9axhkk2`) needs to be configured in the ElevenLabs dashboard.
+
+**A. Data Collection fields** (Analysis > Data Collection in agent settings):
+| Field | Type | Prompt for the agent |
+|-------|------|---------------------|
+| `bug_title` | string | "A short one-line title for the bug" |
+| `description` | string | "Detailed description of what the user is experiencing" |
+| `steps_to_reproduce` | string | "Step-by-step instructions to reproduce" |
+| `severity` | string (enum: low/medium/high/critical) | "Issue severity" |
+| `affected_area` | string | "Which part of the app is affected" |
+
+**B. Post-call webhook** (Settings > Webhooks):
 - URL: `https://sdlc-harness-web.onrender.com/api/elevenlabs`
-- The agent should collect: bug title, description, steps to reproduce
+- Events: `conversation_ended`
+- Secret: value of `ELEVENLABS_WEBHOOK_SECRET` env var
+
+**C. Agent prompt guidance**: Instruct the agent to collect all five data collection fields (bug_title, description, steps_to_reproduce, severity, affected_area) before ending the call. The agent should confirm each field with the user.
+
+**D. Dev testing**: Use `POST /api/elevenlabs/test` (dev only, returns 404 in production) to create test tickets without a real voice call. See `apps/web/app/api/elevenlabs/test/route.ts`.
 
 ### 5. End-to-end pipeline — never tested
 No full run of the 10-step flow has been completed.

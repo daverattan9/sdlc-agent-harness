@@ -177,7 +177,7 @@ const readNotionTicketTool = tool({
 
       return {
         pageId,
-        title: getTextProp('Title'),
+        title: getTextProp('Name'),
         description: getTextProp('Description'),
         status:
           (props?.['Status']?.['select'] as { name?: string } | undefined)?.name ?? '',
