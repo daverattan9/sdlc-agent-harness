@@ -27,29 +27,29 @@ export interface ElevenLabsWebhookPayload {
   };
 }
 
-interface DataCollectionFields {
-  bug_title?: string;
-  description?: string;
-  steps_to_reproduce?: string;
-  severity?: string;
-  affected_area?: string;
+interface DataCollectionEntry {
+  data_collection_id: string;
+  value: string;
+  rationale?: string;
+  json_schema?: Record<string, unknown>;
 }
 
 export function extractTicketData(payload: ElevenLabsWebhookPayload) {
-  const dc = payload.data.analysis?.data_collection_results as DataCollectionFields | undefined;
+  const dc = payload.data.analysis?.data_collection_results as Record<string, DataCollectionEntry> | undefined;
   const summary = payload.data.analysis?.transcript_summary;
 
-  const str = (v: unknown): string | undefined => {
-    if (typeof v === 'string' && v.trim()) return v.trim();
+  const field = (key: string): string | undefined => {
+    const entry = dc?.[key];
+    if (entry && typeof entry.value === 'string' && entry.value.trim()) return entry.value.trim();
     return undefined;
   };
 
   return {
-    title: str(dc?.bug_title) ?? `Bug Report: ${summary?.slice(0, 80)}`,
-    description: str(dc?.description) ?? summary ?? '',
-    stepsToReproduce: str(dc?.steps_to_reproduce),
-    severity: str(dc?.severity),
-    affectedArea: str(dc?.affected_area),
+    title: field('bug_title') ?? `Bug Report: ${summary?.slice(0, 80)}`,
+    description: field('description') ?? summary ?? '',
+    stepsToReproduce: field('steps_to_reproduce'),
+    severity: field('severity'),
+    affectedArea: field('affected_area'),
   };
 }
 
