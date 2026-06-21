@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { validateElevenLabsSignature } from '@/lib/webhooks/hmac';
 import { createBugTicket } from '@/lib/notion/tickets';
 
-interface ElevenLabsWebhookPayload {
+export interface ElevenLabsWebhookPayload {
   type: string;
   conversation_id: string;
   agent_id: string;
@@ -15,6 +15,32 @@ interface ElevenLabsWebhookPayload {
   metadata?: {
     user_id?: string;
     [key: string]: unknown;
+  };
+}
+
+interface DataCollectionFields {
+  bug_title?: string;
+  description?: string;
+  steps_to_reproduce?: string;
+  severity?: string;
+  affected_area?: string;
+}
+
+export function extractTicketData(payload: ElevenLabsWebhookPayload) {
+  const dc = payload.analysis?.data_collection as DataCollectionFields | undefined;
+  const summary = payload.analysis?.summary;
+
+  const str = (v: unknown): string | undefined => {
+    if (typeof v === 'string' && v.trim()) return v.trim();
+    return undefined;
+  };
+
+  return {
+    title: str(dc?.bug_title) ?? (summary ? `Bug Report: ${summary.slice(0, 80)}` : 'Bug reported via voice support'),
+    description: str(dc?.description) ?? summary ?? 'No description provided',
+    stepsToReproduce: str(dc?.steps_to_reproduce),
+    severity: str(dc?.severity),
+    affectedArea: str(dc?.affected_area),
   };
 }
 
@@ -52,20 +78,22 @@ export async function POST(req: NextRequest) {
     .map((t) => `${t.role.toUpperCase()}: ${t.message}`)
     .join('\n');
 
-  // Extract bug description from analysis or transcript
-  const bugDescription =
-    payload.analysis?.summary ?? 'Bug reported via voice support call';
+  // Extract structured data from data_collection (falls back to summary)
+  const ticketData = extractTicketData(payload);
 
   // Use full UUID for collision-free ticket IDs
   const ticketId = `TICKET-${uuidv4()}`;
 
   try {
     const notionPageId = await createBugTicket({
-      title: `Bug Report: ${bugDescription.slice(0, 80)}`,
-      description: bugDescription,
+      title: ticketData.title,
+      description: ticketData.description,
       transcript: transcriptText,
       reporterId: payload.metadata?.user_id ?? payload.conversation_id,
       ticketId,
+      stepsToReproduce: ticketData.stepsToReproduce,
+      severity: ticketData.severity,
+      affectedArea: ticketData.affectedArea,
     });
 
     return NextResponse.json({
